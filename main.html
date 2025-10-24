@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-M">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Assistant</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide icons -->
+    <script type="module" src="https://unpkg.com/lucide-icons@latest/dist/lucide.min.js"></script>
+    <script nomodule src="https://unpkg.com/lucide-icons@latest/dist/lucide.js"></script>
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Use Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for chat */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-track {
+            background: #2d3748; /* gray-800 */
+        }
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #4a5568; /* gray-600 */
+            border-radius: 3px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #718096; /* gray-500 */
+        }
+        
+        /* Simple typing indicator animation */
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #cbd5e0; /* gray-400 */
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); }
+        }
+
+        /* Helper class to hide views */
+        .hidden-view {
+            display: none;
+        }
+
+        /* Modal styles */
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex flex-col min-h-screen">
+
+    <!-- 
+      =====================================================
+      Main Home Page View (Visible by default)
+      =====================================================
+    -->
+    <div id="home-view" class="flex flex-col min-h-screen w-full">
+        <!-- Header: Sign In / Login -->
+        <header class="absolute top-0 right-0 p-4 sm:p-6">
+            <nav class="flex items-center space-x-4">
+                <button class="px-4 py-2 text-sm font-medium text-white bg-transparent rounded-lg hover:bg-gray-800 transition-colors">
+                    Login
+                </button>
+                <button class="px-4 py-2 text-sm font-medium text-black bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors">
+                    Sign Up
+                </button>
+            </nav>
+        </header>
+
+        <!-- Main Content: Search and Features -->
+        <main class="flex-1 flex flex-col items-center justify-center p-4 w-full">
+            <div class="w-full max-w-4xl flex flex-col items-center">
+                <!-- Title -->
+                <h1 class="text-4xl sm:text-5xl md:text-6xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                    How may I help you?
+                </h1>
+
+                <!-- Search Form -->
+                <form id="search-form" class="w-full max-w-3xl relative">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="search-input" placeholder="Ask about tax optimization, market trends, or portfolio analysis..." class="w-full p-4 pl-12 pr-4 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                </form>
+
+                <!-- Feature Buttons -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12 w-full">
+                    <!-- Changed <a> to <button> and added data-view attribute -->
+                    <button data-view="tax-optimizer-view" class="feature-card">
+                        <i data-lucide="calculator" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">AI Tax Optimizer</span>
+                    </button>
+                    <button data-view="budget-tracker-view" class="feature-card">
+                        <i data-lucide="piggy-bank" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">Budget Tracker</span>
+                    </button>
+                    <button data-view="portfolio-tracker-view" class="feature-card">
+                        <i data-lucide="pie-chart" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">Portfolio Tracker</span>
+                    </button>
+                    <button data-view="business-finance-view" class="feature-card">
+                        <i data-lucide="briefcase" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">Business Finance</span>
+                    </button>
+                    <button data-view="doc-qa-view" class="feature-card">
+                        <i data-lucide="file-text" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">AI Document Q&A</span>
+                    </button>
+                    <button data-view="stock-predictor-view" class="feature-card">
+                        <i data-lucide="trending-up" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">Stock Predictor</span>
+                    </button>
+                    <button data-view="news-analyzer-view" class="feature-card">
+                        <i data-lucide="newspaper" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">Market News Analyzer</span>
+                    </button>
+                    <button data-view="legal-chatbot-view" class="feature-card">
+                        <i data-lucide="gavel" class="w-6 h-6 mb-2"></i>
+                        <span class="text-sm font-medium">LegalChatBot</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 
+      =====================================================
+      Full-Screen Chat View (Hidden by default)
+      =====================================================
+    -->
+    <div id="chat-view" class="fixed inset-0 bg-gray-900 flex-col h-full w-full hidden-view">
+        <!-- Chat Header -->
+        <header class="flex items-center justify-between p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold">Financial Assistant</h2>
+            <div class="w-9"></div> <!-- Spacer -->
+        </header>
+
+        <!-- Chat Messages Container -->
+        <div id="chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 w-full max-w-4xl mx-auto chat-messages">
+            <!-- Initial Bot Message -->
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                        AI
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <div class="bg-gray-800 rounded-lg rounded-tl-none p-3 shadow-md">
+                        <p class="text-sm text-gray-200">Hello! I'm your AI financial assistant. Feel free to ask me anything about your finances, market trends, or tax strategies.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Messages will be dynamically added here -->
+        </div>
+
+        <!-- Typing Indicator (template, hidden by default) -->
+        <div id="typing-indicator" class="hidden-view flex items-center px-4 sm:px-6 w-full max-w-4xl mx-auto">
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                    AI
+                </div>
+            </div>
+            <div class="ml-3">
+                <div class="bg-gray-800 rounded-lg p-3 shadow-md">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Input Form -->
+        <footer class="p-4 sm:p-6 border-t border-gray-700 w-full bg-gray-900 flex-shrink-0">
+            <form id="chat-form" class="flex items-center w-full max-w-4xl mx-auto">
+                <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off" class="flex-1 p-3 pr-12 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button type="submit" class="absolute right-6 sm:right-auto sm:relative sm:right-0 sm:ml-3 p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50" style="right: 1.75rem;">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
+            </form>
+        </footer>
+    </div>
+    
+    <!-- 
+      =====================================================
+      Feature Views (Hidden by default)
+      =====================================================
+    -->
+
+    <!-- 1. AI Tax Optimizer -->
+    <div id="tax-optimizer-view" class="flex-col min-h-screen w-full hidden-view">
+        <!-- Header -->
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">AI Tax Optimizer & Calculator</h2>
+        </header>
+        <!-- Content -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-6xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Form -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">Tax Optimization</h3>
+                    <form id="tax-form" class="space-y-6">
+                        <div>
+                            <label for="income" class="block text-sm font-medium text-gray-300 mb-2">Total Annual Income</label>
+                            <input type="number" id="income" placeholder="e.g., 800000" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="800000">
+                        </div>
+                        <div>
+                            <label for="deductions" class="block text-sm font-medium text-gray-300 mb-2">Total Deductions (e.g., 80C, 80D)</label>
+                            <input type="number" id="deductions" placeholder="e.g., 150000" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="150000">
+                        </div>
+                        <div>
+                            <label for="filing-status" class="block text-sm font-medium text-gray-300 mb-2">Filing Status</label>
+                            <select id="filing-status" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="single">Individual</option>
+                                <option value="huf">HUF (Hindu Undivided Family)</option>
+                                <option value="senior">Senior Citizen</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">Calculate & Optimize</button>
+                    </form>
+                </div>
+                <!-- Results Area -->
+                <div class="bg-gray-800 p-6 rounded-lg hidden-view" id="tax-results">
+                    <h4 class="text-xl font-semibold mb-4">Optimization Results</h4>
+                    <div class="space-y-4">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Taxable Income:</span>
+                            <span id="taxable-income" class="font-semibold text-lg">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Estimated Tax:</span>
+                            <span id="estimated-tax" class="font-semibold text-lg text-red-400">₹0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Effective Tax Rate:</span>
+                            <span id="effective-rate" class="font-semibold text-lg">0.0%</span>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <canvas id="tax-chart" class="max-h-64"></canvas>
+                    </div>
+                    <div class="mt-6 p-4 bg-gray-700 rounded-lg">
+                        <h5 class="font-semibold mb-2 text-blue-300">AI Optimization Tip:</h5>
+                        <p class="text-sm">Consider increasing your Section 80C contributions by ₹50,000 to potentially save an additional ₹15,000 on your tax bill.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 2. Budget Tracker -->
+    <div id="budget-tracker-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">Budget Tracker</h2>
+        </header>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-7xl mx-auto">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Income</h4>
+                    <p id="total-income" class="text-3xl font-bold text-green-400">₹75,000.00</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Expenses</h4>
+                    <p id="total-expenses" class="text-3xl font-bold text-red-400">-₹3,650.00</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Net Balance</h4>
+                    <p id="net-balance" class="text-3xl font-bold text-gray-200">₹71,350.00</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Add Transaction -->
+                <div class="lg:col-span-1 bg-gray-800 p-6 rounded-lg self-start">
+                    <h3 class="text-xl font-semibold mb-4">Add Transaction</h3>
+                    <form id="budget-form" class="space-y-4">
+                        <input type="text" id="budget-desc" placeholder="Description" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                        <input type="number" id="budget-amount" placeholder="Amount" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" step="0.01" required>
+                        <select id="budget-type" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                        <select id="budget-category" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="food">Food</option>
+                            <option value="transport">Transport</option>
+                            <option value="utilities">Utilities</option>
+                            <option value="rent">Rent</option>
+                            <option value="income">Income</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">Add</button>
+                    </form>
+                </div>
+                <!-- Transactions & Chart -->
+                <div class="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Transactions List -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">Recent Transactions</h3>
+                        <ul id="budget-list" class="space-y-3 max-h-96 overflow-y-auto">
+                            <li class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <div>
+                                    <span class="font-medium">Coffee Shop</span>
+                                    <span class="block text-xs text-gray-400">Food</span>
+                                </div>
+                                <span class="text-red-400 font-medium">-₹150.00</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <div>
+                                    <span class="font-medium">Salary</span>
+                                    <span class="block text-xs text-gray-400">Income</span>
+                                </div>
+                                <span class="text-green-400 font-medium">+₹75,000.00</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                                <div>
+                                    <span class="font-medium">Groceries</span>
+                                    <span class="block text-xs text-gray-400">Food</span>
+                                </div>
+                                <span class="text-red-400 font-medium">-₹3,500.00</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Expense Chart -->
+                    <div class="bg-gray-800 p-6 rounded-lg">
+                        <h3 class="text-xl font-semibold mb-4">Expense Breakdown</h3>
+                        <canvas id="expense-chart" class="max-h-96"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. Portfolio Tracker -->
+    <div id="portfolio-tracker-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">Portfolio Tracker</h2>
+        </header>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-7xl mx-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">My Portfolio (Total Value: <span id="portfolio-total-value">₹8,45,000.00</span>)</h3>
+                <button id="add-asset-btn" class="p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center">
+                    <i data-lucide="plus" class="w-5 h-5 mr-2"></i> Add Asset
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Portfolio Table -->
+                <div class="lg:col-span-2 bg-gray-800 rounded-lg overflow-hidden">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-700">
+                            <tr>
+                                <th class="p-4">Asset</th>
+                                <th class="p-4">Ticker</th>
+                                <th class="p-4">Amount</th>
+                                <th class="p-4">Value</th>
+                                <th class="p-4">24h Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="portfolio-table-body" class="divide-y divide-gray-700">
+                            <tr>
+                                <td class="p-4">Reliance Industries</td>
+                                <td class="p-4">RELIANCE.NS</td>
+                                <td class="p-4">50</td>
+                                <td class="p-4" data-value="145000.00">₹1,45,000.00</td>
+                                <td class="p-4 text-green-400">+1.2%</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4">TCS</td>
+                                <td class="p-4">TCS.NS</td>
+                                <td class="p-4">100</td>
+                                <td class="p-4" data-value="380000.00">₹3,80,000.00</td>
+                                <td class="p-4 text-red-400">-0.5%</td>
+                            </tr>
+                            <tr>
+                                <td class="p-4">HDFC Bank</td>
+                                <td class="p-4">HDFCBANK.NS</td>
+                                <td class="p-4">200</td>
+                                <td class="p-4" data-value="320000.00">₹3,20,000.00</td>
+                                <td class="p-4 text-green-400">+0.8%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Allocation Chart -->
+                <div class="lg:col-span-1 bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-xl font-semibold mb-4">Portfolio Allocation</h3>
+                    <canvas id="portfolio-chart" class="max-h-96"></canvas>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 4. Business Finance -->
+    <div id="business-finance-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">Business Finance</h2>
+        </header>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-7xl mx-auto">
+            <h3 class="text-2xl font-bold mb-6">Business Dashboard</h3>
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Revenue (YTD)</h4>
+                    <p class="text-3xl font-bold text-green-400">₹1,20,50,000</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Total Expenses (YTD)</h4>
+                    <p class="text-3xl font-bold text-red-400">₹75,30,000</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Net Profit (YTD)</h4>
+                    <p class="text-3xl font-bold text-green-400">₹45,20,000</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-400 mb-2">Cash on Hand</h4>
+                    <p class="text-3xl font-bold text-blue-400">₹30,00,000</p>
+                </div>
+            </div>
+            <!-- Chart -->
+            <div class="bg-gray-800 p-6 rounded-lg">
+                <h3 class="text-xl font-semibold mb-4">Monthly Revenue vs. Expenses (Last 6 Months)</h3>
+                <canvas id="business-chart" class="max-h-96"></canvas>
+            </div>
+        </main>
+    </div>
+
+    <!-- 5. AI Document Q&A -->
+    <div id="doc-qa-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">AI Document Q&A</h2>
+        </header>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-4xl mx-auto flex flex-col">
+            <!-- File Upload -->
+            <div class="mb-6">
+                <label for="file-upload" class="block text-sm font-medium text-gray-300 mb-2">Upload your document (PDF, DOCX, TXT)</label>
+                <div id="file-upload-dropzone" class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-600 border-dashed rounded-lg">
+                    <div class="space-y-1 text-center">
+                        <i data-lucide="upload-cloud" class="mx-auto h-12 w-12 text-gray-500"></i>
+                        <div class="flex text-sm text-gray-400">
+                            <label for="file-upload-input" class="relative cursor-pointer bg-gray-800 rounded-md font-medium text-blue-400 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-gray-900 focus-within:ring-blue-500">
+                                <span>Upload a file</span>
+                                <input id="file-upload-input" name="file-upload" type="file" class="sr-only">
+                            </label>
+                            <p class="pl-1">or drag and drop</p>
+                        </div>
+                        <p class="text-xs text-gray-500" id="file-upload-text">Max 10MB</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Q&A Chat -->
+            <div class="mt-8 flex-1 flex flex-col min-h-[50vh]">
+                <h3 class="text-xl font-semibold mb-4">Ask questions about your document</h3>
+                <!-- Chat Interface for Doc Q&A -->
+                <div class="bg-gray-800 rounded-lg flex-1 flex flex-col">
+                    <div id="doc-qa-messages" class="flex-1 p-4 space-y-4 overflow-y-auto chat-messages">
+                        <!-- Chat messages for doc Q&A go here -->
+                        <p class="text-sm text-gray-400 text-center" id="doc-qa-placeholder">Please upload a document to begin.</p>
+                    </div>
+                    <form id="doc-qa-form" class="p-4 border-t border-gray-700">
+                        <input type="text" id="doc-qa-input" placeholder="Ask a question..." class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" disabled>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 6. Stock Predictor -->
+    <div id="stock-predictor-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">Stock Predictor</h2>
+        </header>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-5xl mx-auto">
+            <form id="stock-form" class="flex items-center w-full max-w-lg mx-auto mb-8">
+                <input type="text" id="stock-ticker-input" placeholder="Enter stock ticker (e.g., RELIANCE.NS, TCS.NS)" class="flex-1 p-3 bg-gray-800 border border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500" value="RELIANCE.NS">
+                <button type="submit" class="p-3 bg-blue-600 text-white rounded-r-lg font-semibold hover:bg-blue-700 transition-colors">Analyze</button>
+            </form>
+            <!-- Chart & Prediction Area -->
+            <div class="bg-gray-800 p-6 rounded-lg hidden-view" id="stock-results">
+                <h3 class="text-xl font-semibold mb-4">Analysis for <span id="stock-ticker-display"></span></h3>
+                <div class="h-96 bg-gray-700 rounded-lg p-4">
+                    <canvas id="stock-chart"></canvas>
+                </div>
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-700 p-6 rounded-lg">
+                        <h4 class="text-lg font-semibold">AI Prediction (Next 30 Days)</h4>
+                        <p id="stock-prediction" class="text-2xl font-bold text-green-400 mt-2">Bullish (Target: ₹3,100.00)</p>
+                        <p id="stock-confidence" class="text-sm text-gray-300 mt-2">Confidence: 85%</p>
+                    </div>
+                    <div class="bg-gray-700 p-6 rounded-lg">
+                        <h4 class="text-lg font-semibold">Key Metrics</h4>
+                        <div class="space-y-2 mt-2 text-sm">
+                            <p><strong>P/E Ratio:</strong> 25.8</p>
+                            <p><strong>Market Cap:</strong> ₹19.5L Cr</p>
+                            <p><strong>52-Week High:</strong> ₹3,100.00</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 7. Market News Analyzer -->
+    <div id="news-analyzer-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">Market News Analyzer</h2>
+        </header>
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8 w-full max-w-6xl mx-auto">
+            <h3 class="text-2xl font-bold mb-6">Analyze Market Sentiment</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Form -->
+                <form id="news-form" class="space-y-6">
+                    <div>
+                        <label for="news-article" class="block text-sm font-medium text-gray-300 mb-2">Paste news article text or URL</label>
+                        <textarea id="news-article" rows="15" class="w-full p-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Paste article here...">RBI hints at holding repo rate steady as inflation shows signs of cooling. However, the job market remains surprisingly strong, sending mixed signals to investors on Dalal Street.</textarea>
+                    </div>
+                    <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">Analyze Sentiment</button>
+                </form>
+                <!-- Analysis Result -->
+                <div class="bg-gray-800 p-6 rounded-lg hidden-view" id="news-results">
+                    <h4 class="text-xl font-semibold mb-4">Analysis Results</h4>
+                    <p class="text-lg font-semibold mb-4">Overall Sentiment: <span id="news-sentiment" class="text-yellow-400">Neutral</span></p>
+                    <div class="mb-6">
+                        <canvas id="sentiment-chart" class="max-h-64"></canvas>
+                    </div>
+                    <div class="p-4 bg-gray-700 rounded-lg">
+                        <h5 class="font-semibold mb-2 text-blue-300">Key Takeaways:</h5>
+                        <ul id="news-takeaways" class="list-disc list-inside text-sm space-y-1">
+                            <li>Positive sentiment detected regarding "inflation cooling".</li>
+                            <li>Negative/Uncertain sentiment related to "mixed signals".</li>
+                            <li>Article mentions "holding repo rate steady" (Bullish for markets).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 8. LegalChatBot -->
+    <div id="legal-chatbot-view" class="flex-col min-h-screen w-full hidden-view">
+        <header class="flex items-center p-4 border-b border-gray-700 w-full flex-shrink-0">
+            <!-- Back button - Added text-gray-300 and hover:bg-gray-700 -->
+            <button class="back-to-home-btn p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700 transition-colors">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </button>
+            <h2 class="text-lg font-semibold ml-4">LegalChatBot</h2>
+        </header>
+        <!-- Chat Messages Container -->
+        <div id="legal-chat-messages" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 w-full max-w-4xl mx-auto chat-messages">
+            <!-- Initial Bot Message -->
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-yellow-500 flex items-center justify-center text-white font-bold text-sm">
+                        AI
+                    </div>
+                </div>
+                <div class="ml-3">
+                    <div class="bg-gray-800 rounded-lg rounded-tl-none p-3 shadow-md">
+                        <p class="text-sm text-gray-200">Hello! I am a legal AI assistant. I can help with general legal information and document analysis. Please note, I am not a substitute for a human lawyer.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Messages will be dynamically added here -->
+        </div>
+        <!-- Chat Input Form -->
+        <footer class="p-4 sm:p-6 border-t border-gray-700 w-full bg-gray-900 flex-shrink-0">
+            <form id="legal-chat-form" class="flex items-center w-full max-w-4xl mx-auto">
+                <input type="text" id="legal-chat-input" placeholder="Ask a legal question..." autocomplete="off" class="flex-1 p-3 pr-12 bg-gray-800 border border-gray-700 rounded-full text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <button type="submit" class="absolute right-6 sm:right-auto sm:relative sm:right-0 sm:ml-3 p-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors disabled:opacity-50" style="right: 1.75rem;">
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
+            </form>
+        </footer>
+    </div>
+    
+    <!-- 
+      =====================================================
+      Modals (Hidden by default)
+      =====================================================
+    -->
+    
+    <!-- Portfolio Add Asset Modal -->
+    <div id="add-asset-modal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 hidden-view modal-backdrop">
+        <div class="bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Add New Asset</h3>
+                <button id="close-modal-btn" class="p-1 rounded-full text-gray-400 hover:bg-gray-700 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form id="add-asset-form" class="space-y-4">
+                <input type="text" id="asset-ticker" placeholder="Stock Ticker (e.g., RELIANCE.NS)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="text" id="asset-name" placeholder="Asset Name (e.g., Reliance Industries)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                <input type="number" id="asset-amount" placeholder="Amount / Shares" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" step="0.0001" required>
+                <input type="number" id="asset-value" placeholder="Total Value (₹)" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-5m00" step="0.01" required>
+                <button type="submit" class="w-full p-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">Add Asset</button>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        // Wrap all JS in DOMContentLoaded to ensure libraries are loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Global Chart Instance Storage ---
+            // This is crucial to prevent Chart.js from creating multiple charts on the same canvas
+            window.myCharts = {};
+
+            // --- Formatters ---
+            const currencyFormatter = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 2,
+            });
+
+            // --- DOM Element Selection ---
+            const allViews = document.querySelectorAll('.hidden-view');
+            const homeView = document.getElementById('home-view');
+            
+            const chatView = document.getElementById('chat-view');
+            const searchForm = document.getElementById('search-form');
+            const searchInput = document.getElementById('search-input');
+            
+            const chatForm = document.getElementById('chat-form');
+            const chatInput = document.getElementById('chat-input');
+            const chatMessages = document.getElementById('chat-messages');
+            const typingIndicator = document.getElementById('typing-indicator');
+
+            const featureButtons = document.querySelectorAll('.feature-card');
+            const backToHomeButtons = document.querySelectorAll('.back-to-home-btn');
+
+            // --- Helper Functions ---
+
+            /**
+             * Destroys a chart instance if it exists.
+             * @param {string} chartId - The key in window.myCharts
+             */
+            function destroyChart(chartId) {
+                if (window.myCharts[chartId]) {
+                    window.myCharts[chartId].destroy();
+                    delete window.myCharts[chartId];
+                }
+            }
+
+            /**
+             * Hides all views and shows the one with the specified ID.
+             * @param {string} viewId - The ID of the view to show.
+             */
+            function showView(viewId) {
+                // Hide all views
+                allViews.forEach(view => {
+                    view.classList.add('hidden-view');
+                    view.classList.remove('flex', 'flex-col'); // Remove display classes
+                });
+                homeView.classList.add('hidden-view'); // Also hide home view
+                homeView.classList.remove('flex');
+
+                // Show the requested view
+                const viewToShow = document.getElementById(viewId);
+                if (viewToShow) {
+                    viewToShow.classList.remove('hidden-view');
+                    if (viewId === 'home-view') {
+                        viewToShow.classList.add('flex');
+                    } else if (!viewToShow.classList.contains('modal-backdrop')) {
+                        // All other views use flex-col, unless it's a modal
+                        viewToShow.classList.add('flex', 'flex-col');
+                    } else {
+                        // Special case for modal
+                        viewToShow.classList.add('flex');
+                    }
+                    
+                    // Re-render icons for the newly visible view
+                    lucide.createIcons();
+                    
+                    // --- Render charts for the specific view ---
+                    // We do this here to ensure the canvas is visible
+                    if (viewId === 'tax-optimizer-view') {
+                        // Don't render chart immediately, wait for calculation
+                    } else if (viewId === 'budget-tracker-view') {
+                        renderExpenseChart();
+                    } else if (viewId === 'portfolio-tracker-view') {
+                        renderPortfolioChart();
+                    } else if (viewId === 'business-finance-view') {
+                        renderBusinessChart();
+                    } else if (viewId === 'stock-predictor-view') {
+                        // Don't render chart immediately, wait for analysis
+                    } else if (viewId === 'news-analyzer-view') {
+                        // Don't render chart immediately, wait for analysis
+                    }
+                }
+            }
+            
+            /**
+             * Shows a modal by its ID.
+             * @param {string} modalId - The ID of the modal to show.
+             */
+            function showModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden-view');
+                    modal.classList.add('flex');
+                    lucide.createIcons(); // Render modal icons
+                }
+            }
+            
+            /**
+             * Hides a modal by its ID.
+             * @param {string} modalId - The ID of the modal to hide.
+             */
+            function hideModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden-view');
+                    modal.classList.remove('flex');
+                }
+            }
+
+            /**
+             * Adds a message to a specific chat window.
+             * @param {string} text - The message content.
+             * @param {'user' | 'bot'} sender - The sender of the message.
+             * @param {HTMLElement} chatMessagesContainer - The chat container element.
+             */
+            function addChatMessage(text, sender, chatMessagesContainer) {
+                if (!chatMessagesContainer) return;
+
+                const messageWrapper = document.createElement('div');
+                messageWrapper.className = 'flex ' + (sender === 'user' ? 'justify-end' : '');
+                
+                let messageHtml = '';
+                let iconHtml = '';
+
+                if (sender === 'bot') {
+                    // Specific AI icon for legal bot
+                    if (chatMessagesContainer.closest('#legal-chatbot-view')) {
+                        iconHtml = `<div class="w-8 h-8 rounded-full bg-gradient-to-r from-red-500 to-yellow-500 flex items-center justify-center text-white font-bold text-sm">AI</div>`;
+                    } 
+                    // Specific AI icon for doc Q&A
+                    else if (chatMessagesContainer.closest('#doc-qa-view')) {
+                        iconHtml = `<div class="w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center text-white font-bold text-sm">AI</div>`;
+                    }
+                    else { // Default financial AI icon
+                        iconHtml = `<div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">AI</div>`;
+                    }
+
+                    messageHtml = `
+                        <div class="flex-shrink-0">${iconHtml}</div>
+                        <div class="ml-3">
+                            <div class="bg-gray-800 rounded-lg rounded-tl-none p-3 shadow-md">
+                                <p class="text-sm text-gray-200">${text}</p>
+                            </div>
+                        </div>
+                    `;
+                } else { // 'user'
+                    messageHtml = `
+                        <div class="bg-blue-600 rounded-lg rounded-br-none p-3 shadow-md">
+                            <p class="text-sm text-white">${text}</p>
+                        </div>
+                        <div class="flex-shrink-0 ml-3">
+                             <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-gray-400 font-bold text-sm">
+                                <i data-lucide="user" class="w-5 h-5"></i>
+                             </div>
+                        </div>
+                    `;
+                }
+                
+                messageWrapper.innerHTML = messageHtml;
+                chatMessagesContainer.appendChild(messageWrapper);
+                
+                if (sender === 'user') {
+                    lucide.createIcons();
+                }
+                chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+            }
+
+            /**
+             * Simulates a bot response for the main chat.
+             * @param {string} query - The user's query.
+             */
+            function getBotResponse(query) {
+                typingIndicator.classList.remove('hidden-view');
+                typingIndicator.classList.add('flex');
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                setTimeout(() => {
+                    typingIndicator.classList.add('hidden-view');
+                    typingIndicator.classList.remove('flex');
+
+                    let response = `I've received your query about: "${query}". As an AI assistant, I can help you with financial analysis, tax questions, and more. What specific information are you looking for?`;
+                    
+                    if (query.toLowerCase().includes('tax')) {
+                        response = "Tax optimization is a key area. To give you the best advice, I'd need to know more about your income sources, deductions, and financial goals. Would you like to start an analysis?";
+                    } else if (query.toLowerCase().includes('stock')) {
+                        response = "Analyzing stocks involves looking at fundamentals, technical indicators, and market sentiment. Which stock are you interested in?";
+                    }
+                    
+                    addChatMessage(response, 'bot', chatMessages);
+                }, 1500);
+            }
+            
+            // --- Chart Rendering Functions ---
+            
+            function renderTaxChart(income, tax) {
+                destroyChart('taxChart');
+                const ctx = document.getElementById('tax-chart').getContext('2d');
+                window.myCharts.taxChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Net Income', 'Estimated Tax'],
+                        datasets: [{
+                            data: [income - tax, tax],
+                            backgroundColor: ['#34D399', '#F87171'], // Green, Red
+                            borderColor: '#4B5563', // gray-600
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: '#D1D5DB' } } // gray-300
+                        }
+                    }
+                });
+            }
+            
+            function renderExpenseChart() {
+                destroyChart('expenseChart');
+                
+                // Aggregate data from the list
+                const budgetList = document.getElementById('budget-list');
+                const expenses = {};
+                budgetList.querySelectorAll('li').forEach(item => {
+                    const type = item.querySelector('span:last-child').classList.contains('text-red-400') ? 'expense' : 'income';
+                    if (type === 'expense') {
+                        const category = item.querySelector('.text-xs').textContent;
+                        // Clean currency string for parsing
+                        const amount = parseFloat(item.querySelector('span:last-child').textContent.replace('₹', '').replace('-', '').replace('+', '').replace(/,/g, ''));
+                        expenses[category] = (expenses[category] || 0) + amount;
+                    }
+                });
+                
+                const ctx = document.getElementById('expense-chart').getContext('2d');
+                window.myCharts.expenseChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(expenses).length > 0 ? Object.keys(expenses) : ['No Expenses'],
+                        datasets: [{
+                            data: Object.keys(expenses).length > 0 ? Object.values(expenses) : [1],
+                            backgroundColor: Object.keys(expenses).length > 0 ? ['#F87171', '#FBBF24', '#60A5FA', '#EC4899', '#A78BFA'] : ['#4B5563'], // Red, Amber, Blue, Pink, Violet
+                            borderColor: '#4B5563',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: '#D1D5DB' } }
+                        }
+                    }
+                });
+            }
+            
+            function renderPortfolioChart() {
+                destroyChart('portfolioChart');
+                
+                // Aggregate data from the table
+                const tableBody = document.getElementById('portfolio-table-body');
+                const assets = {};
+                tableBody.querySelectorAll('tr').forEach(row => {
+                    const name = row.cells[0].textContent;
+                    const value = parseFloat(row.cells[3].getAttribute('data-value'));
+                    assets[name] = value;
+                });
+                
+                const ctx = document.getElementById('portfolio-chart').getContext('2d');
+                window.myCharts.portfolioChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: Object.keys(assets).length > 0 ? Object.keys(assets) : ['No Assets'],
+                        datasets: [{
+                            data: Object.keys(assets).length > 0 ? Object.values(assets) : [1],
+                            backgroundColor: Object.keys(assets).length > 0 ? ['#60A5FA', '#34D399', '#FBBF24', '#A78BFA', '#EC4899'] : ['#4B5563'],
+                            borderColor: '#4B5563',
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: '#D1D5DB' } }
+                        }
+                    }
+                });
+            }
+            
+            function renderBusinessChart() {
+                destroyChart('businessChart');
+                const ctx = document.getElementById('business-chart').getContext('2d');
+                const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                window.myCharts.businessChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Revenue',
+                                data: [1200000, 1900000, 1500000, 2200000, 1800000, 2500000],
+                                backgroundColor: '#34D399', // Green
+                            },
+                            {
+                                label: 'Expenses',
+                                data: [800000, 1000000, 900000, 1100000, 950000, 1200000],
+                                backgroundColor: '#F87171', // Red
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { labels: { color: '#D1D5DB' } }
+                        },
+                        scales: {
+                            y: { 
+                                ticks: { 
+                                    color: '#D1D5DB',
+                                    callback: function(value) { return '₹' + value / 100000 + 'L'; } // Format as Lakhs
+                                }, 
+                                grid: { color: '#4B5563' } 
+                            },
+                            x: { ticks: { color: '#D1D5DB' }, grid: { color: '#4B5563' } }
+                        }
+                    }
+                });
+            }
+            
+            function renderStockChart() {
+                destroyChart('stockChart');
+                const ctx = document.getElementById('stock-chart').getContext('2d');
+                // Generate fake data
+                const labels = Array.from({length: 30}, (_, i) => `Day ${i+1}`);
+                const data = [];
+                let price = 2800 + Math.random() * 100;
+                for (let i = 0; i < 30; i++) {
+                    data.push(price);
+                    price += (Math.random() - 0.45) * 50; // Add some volatility
+                }
+                
+                window.myCharts.stockChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Price (₹)',
+                            data: data,
+                            borderColor: '#60A5FA',
+                            backgroundColor: 'rgba(96, 165, 250, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { 
+                                ticks: { 
+                                    color: '#D1D5DB',
+                                    callback: function(value) { return currencyFormatter.format(value); }
+                                }, 
+                                grid: { color: '#4B5563' } 
+                            },
+                            x: { ticks: { color: '#D1D5DB', maxTicksLimit: 10 }, grid: { color: '#4B5563' } }
+                        }
+                    }
+                });
+            }
+            
+            function renderSentimentChart(scores) {
+                destroyChart('sentimentChart');
+                const ctx = document.getElementById('sentiment-chart').getContext('2d');
+                window.myCharts.sentimentChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Positive', 'Neutral', 'Negative'],
+                        datasets: [{
+                            label: 'Sentiment Score',
+                            data: [scores.positive, scores.neutral, scores.negative],
+                            backgroundColor: ['#34D399', '#FBBF24', '#F87171'], // Green, Amber, Red
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        indexAxis: 'y',
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { ticks: { color: '#D1D5DB' }, grid: { color: '#4B5563' } },
+                            x: { ticks: { color: '#D1D5DB' }, grid: { color: '#4B5563' } }
+                        }
+                    }
+                });
+            }
+
+
+            // --- Event Listeners ---
+
+            /**
+             * Handles the home page search form submission.
+             */
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (!query) return;
+
+                addChatMessage(query, 'user', chatMessages);
+                searchInput.value = '';
+                showView('chat-view');
+                chatInput.focus();
+                getBotResponse(query);
+            });
+
+            /**
+             * Handles the main chat form submission.
+             */
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const query = chatInput.value.trim();
+                if (!query) return;
+
+                addChatMessage(query, 'user', chatMessages);
+                chatInput.value = '';
+                getBotResponse(query);
+            });
+
+            /**
+             * Handles clicks on all feature buttons.
+             */
+            featureButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const viewId = button.getAttribute('data-view');
+                    if (viewId) {
+                        showView(viewId);
+                    }
+                });
+            });
+
+            /**
+             * Handles clicks on all 'Back to Home' buttons.
+             */
+            backToHomeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    showView('home-view');
+                });
+            });
+            
+            // --- Feature-Specific Event Listeners ---
+            
+            // 1. Tax Optimizer
+            document.getElementById('tax-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const income = parseFloat(document.getElementById('income').value) || 0;
+                const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+                
+                const taxableIncome = Math.max(0, income - deductions);
+                // Simple mock calc - this is NOT real Indian tax code
+                let estimatedTax = 0;
+                if (taxableIncome > 500000) estimatedTax = (taxableIncome - 500000) * 0.20 + 12500;
+                else if (taxableIncome > 250000) estimatedTax = (taxableIncome - 250000) * 0.05;
+                
+                const effectiveRate = (estimatedTax / income) * 100 || 0;
+                
+                document.getElementById('taxable-income').textContent = currencyFormatter.format(taxableIncome);
+                document.getElementById('estimated-tax').textContent = currencyFormatter.format(estimatedTax);
+                document.getElementById('effective-rate').textContent = `${effectiveRate.toFixed(1)}%`;
+                
+                document.getElementById('tax-results').classList.remove('hidden-view');
+                renderTaxChart(taxableIncome, estimatedTax);
+            });
+            
+            // 2. Budget Tracker
+            document.getElementById('budget-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const desc = document.getElementById('budget-desc').value;
+                const amount = parseFloat(document.getElementById('budget-amount').value);
+                const type = document.getElementById('budget-type').value;
+                const category = document.getElementById('budget-category').value;
+                
+                const amountText = (type === 'expense' ? '-' : '+') + currencyFormatter.format(amount);
+                const amountClass = type === 'expense' ? 'text-red-400' : 'text-green-400';
+                
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3 bg-gray-700 rounded-lg';
+                li.innerHTML = `
+                    <div>
+                        <span class="font-medium">${desc}</span>
+                        <span class="block text-xs text-gray-400">${category}</span>
+                    </div>
+                    <span class="${amountClass} font-medium">${amountText}</span>
+                `;
+                document.getElementById('budget-list').prepend(li);
+                
+                // Update summary
+                updateBudgetSummary();
+                // Update chart
+                renderExpenseChart();
+                
+                // Reset form
+                e.target.reset();
+            });
+            
+            function updateBudgetSummary() {
+                let income = 0;
+                let expenses = 0;
+                document.getElementById('budget-list').querySelectorAll('li').forEach(item => {
+                    const amount = parseFloat(item.querySelector('span:last-child').textContent.replace('₹', '').replace('+', '').replace('-', '').replace(/,/g, ''));
+                    if (item.querySelector('span:last-child').classList.contains('text-red-400')) {
+                        expenses += amount;
+                    } else {
+                        income += amount;
+                    }
+                });
+                document.getElementById('total-income').textContent = currencyFormatter.format(income);
+                document.getElementById('total-expenses').textContent = '-' + currencyFormatter.format(expenses);
+                document.getElementById('net-balance').textContent = currencyFormatter.format(income - expenses);
+            }
+            
+            // 3. Portfolio Tracker
+            document.getElementById('add-asset-btn').addEventListener('click', () => {
+                showModal('add-asset-modal');
+            });
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                hideModal('add-asset-modal');
+            });
+            document.getElementById('add-asset-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('asset-name').value;
+                const ticker = document.getElementById('asset-ticker').value.toUpperCase();
+                const amount = parseFloat(document.getElementById('asset-amount').value);
+                const value = parseFloat(document.getElementById('asset-value').value);
+                
+                const change = (Math.random() * 8 - 4).toFixed(1); // Random -4% to +4%
+                const changeClass = change >= 0 ? 'text-green-400' : 'text-red-400';
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4">${name}</td>
+                    <td class="p-4">${ticker}</td>
+                    <td class="p-4">${amount}</td>
+                    <td class="p-4" data-value="${value}">${currencyFormatter.format(value)}</td>
+                    <td class="p-4 ${changeClass}">${change >= 0 ? '+' : ''}${change}%</td>
+                `;
+                document.getElementById('portfolio-table-body').appendChild(tr);
+                
+                // Update total value
+                updatePortfolioTotal();
+                // Update chart
+                renderPortfolioChart();
+                
+                hideModal('add-asset-modal');
+                e.target.reset();
+            });
+            
+            function updatePortfolioTotal() {
+                let total = 0;
+                document.getElementById('portfolio-table-body').querySelectorAll('tr').forEach(row => {
+                    total += parseFloat(row.cells[3].getAttribute('data-value'));
+                });
+                document.getElementById('portfolio-total-value').textContent = currencyFormatter.format(total);
+            }
+            
+            // 5. Document Q&A
+            document.getElementById('file-upload-input').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    document.getElementById('file-upload-text').textContent = `File selected: ${file.name}`;
+                    document.getElementById('doc-qa-input').disabled = false;
+                    document.getElementById('doc-qa-input').placeholder = `Ask a question about ${file.name}`;
+                    document.getElementById('doc-qa-placeholder').classList.add('hidden-view');
+                    addChatMessage(`I've loaded "${file.name}". What would you like to know?`, 'bot', document.getElementById('doc-qa-messages'));
+                }
+            });
+            
+            document.getElementById('doc-qa-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('doc-qa-input');
+                const query = input.value.trim();
+                if (!query) return;
+                
+                addChatMessage(query, 'user', document.getElementById('doc-qa-messages'));
+                input.value = '';
+                
+                setTimeout(() => {
+                    addChatMessage(`Based on the document, the answer to "${query}" appears to be... [AI analysis would go here].`, 'bot', document.getElementById('doc-qa-messages'));
+                }, 1000);
+            });
+            
+            // 6. Stock Predictor
+            document.getElementById('stock-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const ticker = document.getElementById('stock-ticker-input').value.toUpperCase();
+                if (!ticker) return;
+                
+                document.getElementById('stock-ticker-display').textContent = ticker;
+                
+                // Mock prediction
+                const isBullish = Math.random() > 0.5;
+                const target = 2800 + Math.random() * 500;
+                const confidence = 70 + Math.random() * 25;
+                
+                const predictionEl = document.getElementById('stock-prediction');
+                predictionEl.textContent = `${isBullish ? 'Bullish' : 'Bearish'} (Target: ${currencyFormatter.format(target)})`;
+                predictionEl.className = `text-2xl font-bold mt-2 ${isBullish ? 'text-green-400' : 'text-red-400'}`;
+                document.getElementById('stock-confidence').textContent = `Confidence: ${confidence.toFixed(0)}%`;
+                
+                document.getElementById('stock-results').classList.remove('hidden-view');
+                renderStockChart();
+            });
+            
+            // 7. Market News Analyzer
+            document.getElementById('news-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const article = document.getElementById('news-article').value;
+                if (!article) return;
+                
+                // Mock analysis
+                const scores = {
+                    positive: Math.random(),
+                    neutral: Math.random(),
+                    negative: Math.random()
+                };
+                const total = scores.positive + scores.neutral + scores.negative;
+                scores.positive = scores.positive / total;
+                scores.neutral = scores.neutral / total;
+                scores.negative = scores.negative / total;
+                
+                let sentiment = 'Neutral';
+                let sentimentClass = 'text-yellow-400';
+                if (scores.positive > scores.negative && scores.positive > scores.neutral) {
+                    sentiment = 'Positive';
+                    sentimentClass = 'text-green-400';
+                } else if (scores.negative > scores.positive && scores.negative > scores.neutral) {
+                    sentiment = 'Negative';
+                    sentimentClass = 'text-red-400';
+                }
+                
+                document.getElementById('news-sentiment').textContent = sentiment;
+                document.getElementById('news-sentiment').className = 'font-semibold ' + sentimentClass;
+                
+                document.getElementById('news-results').classList.remove('hidden-view');
+                renderSentimentChart(scores);
+            });
+            
+            // 8. Legal ChatBot
+            document.getElementById('legal-chat-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('legal-chat-input');
+                const query = input.value.trim();
+                if (!query) return;
+                
+                const container = document.getElementById('legal-chat-messages');
+                addChatMessage(query, 'user', container);
+                input.value = '';
+                
+                setTimeout(() => {
+                    addChatMessage(`Regarding your question on "${query}", please note that this is general information. [AI legal analysis would go here]. You should consult with a qualified legal professional for advice on your specific situation.`, 'bot', container);
+                }, 1000);
+            });
+
+
+            // --- Page Load ---
+            // Apply Tailwind classes to feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+                card.className = "flex flex-col items-center justify-center text-center p-4 bg-gray-800 rounded-lg border border-gray-600 hover:border-blue-500 transition-all duration-300 transform hover:-translate-y-2 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/30 cursor-pointer text-gray-300 hover:text-white";
+            });
+
+            // Show the home view by default
+            showView('home-view');
+
+            // Manually run createIcons on first load
+            lucide.createIcons();
+            
+            // Pre-populate budget summary and charts
+            updateBudgetSummary();
+            renderExpenseChart(); // Initial render for budget
+            renderPortfolioChart(); // Initial render for portfolio
+        
+        }); // End of DOMContentLoaded
+    </script>
+</body>
+</html>
